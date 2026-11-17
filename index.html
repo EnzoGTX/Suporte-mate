@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Satisfação de Clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="logo.jpg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" role="img" aria-label="Matte"></span>
+      <h1>Satisfação de Clientes</h1>
+    </div>
+    <div class="data-actions">
+      <button class="btn ghost small" data-action="export">Exportar dados</button>
+      <button class="btn ghost small" data-action="import">Importar dados</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="Resumo">
+    <div class="stat"><span class="stat-label">Empresas</span><strong id="stat-total">0</strong></div>
+    <div class="stat"><span class="stat-label">Satisfação média</span><strong id="stat-avg">—</strong></div>
+    <div class="stat"><span class="stat-label">Em estado crítico</span><strong id="stat-critical" class="red">0</strong></div>
+    <div class="stat wide"><span class="stat-label">Problema mais frequente</span><strong id="stat-top-problem" class="stat-text">—</strong></div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="empresas">Empresas</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="problemas">Problemas</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="ranking">Ranking</button>
+  </nav>
+
+  <main>
+    <!-- EMPRESAS -->
+    <section class="panel active" id="tab-empresas" role="tabpanel">
+      <div class="layout">
+        <form class="card form" id="company-form" autocomplete="off">
+          <h2 id="company-form-title">Registrar empresa</h2>
+
+          <label class="field">
+            <span>Empresa</span>
+            <input type="text" id="company-name" maxlength="80" placeholder="Nome da empresa" required>
+          </label>
+
+          <div class="field">
+            <span>Nível de satisfação</span>
+            <div class="score-row">
+              <input type="range" id="company-score" min="0" max="10" step="1" value="7" aria-label="Nível de satisfação de 0 a 10">
+              <output id="company-score-out" class="score-out">7</output>
+            </div>
+            <p class="hint" id="company-score-tier"></p>
+          </div>
+
+          <div class="field">
+            <span>Problemas recorrentes com o produto</span>
+            <div class="chips" id="draft-chips"></div>
+            <div class="inline">
+              <input type="text" id="problem-input" maxlength="80" list="problem-suggestions" placeholder="Digite e pressione Enter">
+              <button type="button" class="btn ghost small" data-action="add-draft">Adicionar</button>
+            </div>
+            <datalist id="problem-suggestions"></datalist>
+            <p class="hint">Problemas novos entram automaticamente na aba Problemas.</p>
+          </div>
+
+          <label class="field">
+            <span>Observações</span>
+            <textarea id="company-notes" rows="3" maxlength="600" placeholder="Contexto, último contato, próximos passos..."></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary" id="company-submit">Salvar empresa</button>
+            <button type="button" class="btn ghost" data-action="cancel-company" id="company-cancel" hidden>Cancelar</button>
+          </div>
+        </form>
+
+        <div class="list-col">
+          <div class="list-head">
+            <h2>Empresas registradas</h2>
+            <input type="search" id="company-search" placeholder="Buscar empresa" aria-label="Buscar empresa">
+          </div>
+          <div id="company-list" class="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEMAS -->
+    <section class="panel" id="tab-problemas" role="tabpanel" hidden>
+      <div class="layout">
+        <form class="card form" id="problem-form" autocomplete="off">
+          <h2 id="problem-form-title">Registrar problema</h2>
+          <label class="field">
+            <span>Problema</span>
+            <input type="text" id="problem-title" maxlength="80" placeholder="Ex.: Demora na integração" required>
+          </label>
+          <label class="field">
+            <span>Como evitar</span>
+            <textarea id="problem-prevention" rows="4" maxlength="600" placeholder="O que a equipe deve fazer para isso não se repetir"></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn primary" id="problem-submit">Salvar problema</button>
+            <button type="button" class="btn ghost" data-action="cancel-problem" id="problem-cancel" hidden>Cancelar</button>
+          </div>
+        </form>
+
+        <div class="list-col">
+          <div class="list-head">
+            <h2>Problemas mais frequentes</h2>
+          </div>
+          <div id="problem-list" class="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RANKING -->
+    <section class="panel" id="tab-ranking" role="tabpanel" hidden>
+      <div class="card">
+        <div class="list-head">
+          <h2>Classificação das empresas</h2>
+          <p class="hint">Ordenado por satisfação; em caso de empate, menos problemas primeiro.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="rank">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Empresa</th>
+                <th>Satisfação</th>
+                <th>Problemas</th>
+                <th>Classificação</th>
+              </tr>
+            </thead>
+            <tbody id="rank-body"></tbody>
+          </table>
+        </div>
+        <div id="rank-empty" class="empty" hidden>Nenhuma empresa registrada ainda.</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
